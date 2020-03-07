@@ -7,8 +7,8 @@
 #    http://shiny.rstudio.com/
 #
 
+library(plotly)
 library(shiny)
-library(shinymaterial)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
@@ -16,18 +16,18 @@ library(lubridate)
 library(stringr)
 library(shinydashboard)
 library(shinyjs)
-library(plotly)
 library(shinycssloaders)
+library(cowplot)
 
-
+datos <- read.csv("datos/datos_final.csv", stringsAsFactors = FALSE)
+kobe <- read.csv("datos/kobe2.csv", stringsAsFactors = FALSE, encoding = "latin1", sep = ";")
+logros_kobe <- read.csv("datos/logros_kobe_en.csv", stringsAsFactors = FALSE, sep = ";",encoding = "latin1")
 
 # Define UI for application that draws a histogram
 shinyUI(
     fluidPage(
-        # useShinyjs(),
-        # extendShinyjs("www/kobe.js"),
         theme = "style.css",
-        title = "Distribución de Tiros del Jugador según tipo de Tiro",
+        title = "Basketball Analytics App",
         tags$br(),
         tags$script(src="confetti.js"),
         fluidRow(id = "contenido",
@@ -41,22 +41,22 @@ shinyUI(
                        selectInput(
                            inputId = "jugador",
                            label = "Player",
-                           choices =  datos_final2 %>%group_by(shoot.player)%>% summarize(n = n())%>% arrange(desc(n)) %>% pull(shoot.player),
+                           choices =  datos %>%group_by(shoot.player)%>% summarize(n = n())%>% arrange(desc(n)) %>% pull(shoot.player),
                            selected = "Russell Westbrook"
                        ),
                        selectInput(
                            inputId = "tipo_tiro",
                            label = "Shot Type",
-                           choices = c("All Shot Types",unique(datos_final2$shot.type)),
-                           selected = "All Shot Types"
+                           choices = c("All Shot Types",unique(datos$shot.type)),
+                           selected = "3 Pointer"
                            
                        )
-                       #radioButtons("tipo_gráfico",label = "Tipo de Gráfico",selected = "" )
+                       #radioButtons("tipo_grafico",label = "Tipo de Grafico",selected = "" )
                 ),
                 div(id = "izquierda", width = 4,
                 div(class="card z-depth-4",
                     h5("Shot Heatmap"),
-                    #p("Mapa de calor de tiros. Cuanto más oscuro, más tira de esa posición."),
+                    #p("Mapa de calor de tiros. Cuanto mas oscuro, mas tira de esa posición."),
                     depth = 4,
                     valueBoxOutput("total_tiros"),
                     withSpinner(plotOutput("prueba"), type = 6, color = "#00263e")
@@ -82,7 +82,7 @@ shinyUI(
                             selectInput(
                                 inputId = "jugador1",
                                 label = NULL,
-                                choices =  datos_final2 %>%group_by(shoot.player)%>% summarize(n = n())%>% arrange(desc(n)) %>% pull(shoot.player),
+                                choices =  datos %>%group_by(shoot.player)%>% summarize(n = n())%>% arrange(desc(n)) %>% pull(shoot.player),
                                 selected = "Russell Westbrook"
                             ),
                             div(class= "foto_jugador", #Foto del jugador
@@ -118,7 +118,7 @@ shinyUI(
                         selectInput(
                             inputId = "jugador2",
                             label = NULL,
-                            choices =  datos_final2 %>%group_by(shoot.player)%>% summarize(n = n())%>% arrange(desc(n)) %>% pull(shoot.player),
+                            choices =  datos %>%group_by(shoot.player)%>% summarize(n = n())%>% arrange(desc(n)) %>% pull(shoot.player),
                             selected = "Stephen Curry"
                         ),
                         div(
@@ -144,13 +144,13 @@ shinyUI(
                  tags$script(src = "kobe.js"),
                  div(id ="fondo", div(id = "transparente")),
                  div(id = "graficos",
-                     selectInput("año_kobe",label ="",choices = c("All Years",unique(kobe$Año))),
+                     selectInput("ano_kobe",label ="",choices = c("All Years",unique(kobe$Ano))),
                  div(id="evolucion",
                      h4("Points per Match Average Evolution"),
                  plotlyOutput("kobe_evolution",  width = "350px")
                  ),div(id = "partidos",
                        h4("Points & Minutes played per match"),
-                       plotlyOutput("kobe_puntos_año",  width = "350px")
+                       plotlyOutput("kobe_puntos_ano",  width = "350px")
                  )),
                  div(id = "derecha2",
                      div(id= "dato1",
@@ -159,7 +159,7 @@ shinyUI(
                      hr(),
                      div(id= "dato2",
                         h2(textOutput("num_2")),
-                        h4(textOutput("txt_2"))) 
+                        h4(textOutput("txt_2")))
                      ),
                  h4(id = "pruebamamba"," 1978 -",span(id="pruebamamba2","Kobe Bryant")," - 2020")
                  ) #Cerramos el tercer tabPanel
